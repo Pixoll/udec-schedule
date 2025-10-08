@@ -8,6 +8,8 @@ const { schedule } = defineProps<{
   schedule: Schedule;
 }>();
 
+const SUBJECTS_KEY = "subjects";
+
 const colors = [
   "#f44236",
   "#ff9700",
@@ -30,7 +32,9 @@ const filteredSubjects = computed(() =>
   )
 );
 
-const selectedSubjects = reactive(new Set<Subject>());
+const selectedSubjects = reactive(new Set<Subject>(localStorage.getItem(SUBJECTS_KEY)?.split(",").map(code =>
+  schedule.schedules[code]
+).filter<Subject>(s => !!s) ?? []));
 
 const groupedSubjectsResult = computed(() => groupSubjects(selectedSubjects, colors));
 const maxSlot = computed(() => groupedSubjectsResult.value.maxSlot);
@@ -88,6 +92,16 @@ function onSearchChange(e: Event): void {
   // @ts-expect-error idk why value doesnt exist in the types
   search.value = e.target?.value ?? "";
 }
+
+function addSubject(subject: Subject): void {
+  selectedSubjects.add(subject);
+  localStorage.setItem(SUBJECTS_KEY, [...selectedSubjects.values()].map(s => `${s.code}-${s.section}`).join(","));
+}
+
+function removeSubject(subject: Subject): void {
+  selectedSubjects.delete(subject);
+  localStorage.setItem(SUBJECTS_KEY, [...selectedSubjects.values()].map(s => `${s.code}-${s.section}`).join(","));
+}
 </script>
 
 <template>
@@ -118,7 +132,7 @@ function onSearchChange(e: Event): void {
             <button
               type="button"
               class="size-7 mr-2 rounded-full bg-emerald-500 text-center content-center cursor-pointer"
-              @click="() => selectedSubjects.add(subject)"
+              @click="() => addSubject(subject)"
             >
               +
             </button>
@@ -140,7 +154,7 @@ function onSearchChange(e: Event): void {
             <button
               type="button"
               class="size-7 mr-2 rounded-full bg-red-400 text-center content-center cursor-pointer"
-              @click="() => selectedSubjects.delete(subject)"
+              @click="() => removeSubject(subject)"
             >
               -
             </button>
