@@ -83,6 +83,11 @@ function removeAccents(text: string): string {
   // noinspection JSVoidFunctionReturnValueUsed
   return text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
 }
+
+function onSearchChange(e: Event): void {
+  // @ts-expect-error idk why value doesnt exist in the types
+  search.value = e.target?.value ?? "";
+}
 </script>
 
 <template>
@@ -106,7 +111,7 @@ function removeAccents(text: string): string {
           class="block w-full mb-6"
           placeholder="Busca por código o nombre..."
           :value="search"
-          @input="(e) => search = e.target?.value ?? ''"
+          @input="onSearchChange"
         />
         <ul v-if="filteredSubjects.length > 0" class="w-full max-h-96 p-4 space-y-4 overflow-y-scroll">
           <li v-for="subject in filteredSubjects" :key="`${subject.code}-${subject.section}`">
