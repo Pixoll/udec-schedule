@@ -115,8 +115,8 @@ function removeSubject(subject: Subject): void {
       obtener los nuevos horarios.
     </span>
 
-    <div class="flex gap-16 mb-16">
-      <div class="w-[800px]">
+    <div class="mb-16 space-y-16">
+      <div class="max-w-[800px]">
         <label for="subject-search" class="block w-fit mb-2">
           Buscar ramos
         </label>
@@ -145,7 +145,7 @@ function removeSubject(subject: Subject): void {
         </span>
       </div>
 
-      <div>
+      <div class="max-w-[800px]">
         <span class="block mb-4">
           Ramos agregados:
         </span>
