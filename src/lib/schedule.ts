@@ -1,4 +1,7 @@
 import type { ClassDay, Schedule, Subject, SubjectSchedule } from "@/api";
+import { writable } from "svelte/store";
+
+export const schedule = writable<Schedule>();
 
 export type GroupSubjectsResult = {
   groupedSubjects: Map<`${ClassDay}-${number}`, GroupedSubject[]>;
@@ -11,7 +14,7 @@ type GroupedSubject =
   & Pick<Subject, "code" | "section" | "name">
   & Pick<SubjectSchedule, "type" | "blocks">
   & {
-  classrooms: Array<Pick<SubjectSchedule, "group" | "classroom">>;
+  classrooms: Pick<SubjectSchedule, "group" | "classroom">[];
   conflicts: Set<GroupedSubject>;
   slotType: SlotType;
   backgroundColor: string;
@@ -64,6 +67,7 @@ export function groupSubjects(subjects: Set<Subject>, colors: readonly string[])
               subject,
               slot,
               sortedBlocks,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               block: sortedBlocks[i]!,
               i,
             };
@@ -92,6 +96,7 @@ export function groupSubjects(subjects: Set<Subject>, colors: readonly string[])
       }],
       conflicts: new Set(),
       slotType,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       backgroundColor: colors[id % colors.length]!,
       equals(other: GroupedSubject) {
         return this.code === other.code && this.blocks.toString() === other.blocks.toString();

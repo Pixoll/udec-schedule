@@ -21,9 +21,4 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * Get the entire schedule.
  */
-export const getSchedule = <ThrowOnError extends boolean = false>(options?: Options<GetScheduleData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetScheduleResponses, GetScheduleErrors, ThrowOnError>({
-        url: '/api/schedule',
-        ...options
-    });
-};
+export const getSchedule = <ThrowOnError extends boolean = false>(options?: Options<GetScheduleData, ThrowOnError>) => (options?.client ?? client).get<GetScheduleResponses, GetScheduleErrors, ThrowOnError>({ url: '/api/schedule', ...options });

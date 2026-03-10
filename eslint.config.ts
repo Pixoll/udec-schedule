@@ -1,92 +1,68 @@
-import stylisticTs from "@stylistic/eslint-plugin-ts";
-import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript";
-import pluginVue from "eslint-plugin-vue";
-import { globalIgnores } from "eslint/config";
+import { includeIgnoreFile } from "@eslint/compat";
+import js from "@eslint/js";
+import svelte from "eslint-plugin-svelte";
+import { defineConfig } from "eslint/config";
+import globals from "globals";
+import path from "node:path";
+import ts from "typescript-eslint";
+import svelteConfig from "./svelte.config.js";
 
-// More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
+const gitignorePath = path.resolve(import.meta.dirname, ".gitignore");
 
-export default defineConfigWithVueTs(
+export default defineConfig(
+  includeIgnoreFile(gitignorePath),
   {
-    name: "app/files-to-lint",
-    files: ["**/*.{ts,mts,tsx,vue}"],
+    ignores: [
+      "./src/api/client",
+      "./src/api/core",
+      "./src/api/client.gen.ts",
+      "./src/api/sdk.gen.ts",
+      "./src/api/types.gen.ts",
+    ],
   },
-  globalIgnores(["**/dist/**", "**/dist-ssr/**", "**/coverage/**", "src/api/**/*"]),
-  pluginVue.configs["flat/essential"],
-  vueTsConfigs.recommendedTypeChecked,
+  js.configs.recommended,
+  ...ts.configs.strictTypeChecked,
   {
-    plugins: {
-      "@stylistic/ts": stylisticTs,
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
+    },
+  },
+  ...ts.configs.stylisticTypeChecked,
+  ...svelte.configs.recommended,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
     },
     rules: {
-      "comma-dangle": ["error", {
-        arrays: "always-multiline",
-        objects: "always-multiline",
-        imports: "always-multiline",
-        exports: "always-multiline",
-        functions: "only-multiline",
-      }],
-
-      "eol-last": "warn",
-
-      indent: ["warn", 2, {
-        SwitchCase: 1,
-      }],
-
+      "no-undef": "off",
       "max-len": ["warn", {
-        code: 125,
+        code: 120,
       }],
-
-      "no-var": "error",
-      "operator-linebreak": ["error", "before"],
-      quotes: ["warn", "double"],
-
-      "no-multiple-empty-lines": ["warn", {
-        max: 1,
-        maxEOF: 0,
+      "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
+      "@typescript-eslint/no-confusing-void-expression": "off",
+      "@typescript-eslint/restrict-template-expressions": ["warn", {
+        allowNumber: true,
       }],
-
-      eqeqeq: "error",
-      "prefer-const": "error",
-
-      camelcase: ["warn", {
-        properties: "never",
-      }],
-
-      "object-property-newline": ["error", {
-        allowAllPropertiesOnSameLine: true,
-      }],
-
-      "array-element-newline": ["error", "consistent"],
-      "no-duplicate-imports": "error",
-      "max-depth": ["error", 3],
-      "no-unused-vars": "off",
-
-      "@typescript-eslint/no-unused-vars": ["error", {
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
-        caughtErrorsIgnorePattern: "^_",
-      }],
-
-      "@typescript-eslint/array-type": ["error", {
-        default: "array-simple",
-      }],
-
-      "@typescript-eslint/consistent-type-assertions": ["error", {
-        assertionStyle: "as",
-      }],
-
-      "@typescript-eslint/explicit-function-return-type": ["error", {
-        allowExpressions: true,
-      }],
-
-      "@typescript-eslint/no-redundant-type-constituents": "error",
-      "@typescript-eslint/prefer-reduce-type-parameter": "error",
-      "@typescript-eslint/prefer-return-this-type": "error",
-      "@typescript-eslint/explicit-member-accessibility": "error",
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/explicit-module-boundary-types": "error",
-      "@stylistic/ts/member-delimiter-style": "error",
-      "@stylistic/ts/semi": "error",
+    },
+  },
+  {
+    files: [
+      "**/*.svelte",
+      "**/*.svelte.ts",
+      "**/*.svelte.js",
+    ],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        extraFileExtensions: [".svelte"],
+        parser: ts.parser,
+        svelteConfig,
+      },
     },
   },
 );

@@ -5,5 +5,5 @@ export default sdk;
 export * from "./types.gen";
 
 client.setConfig({
-  baseUrl: import.meta.env.VITE_API_URL,
+  baseUrl: import.meta.env["VITE_API_URL"] as string | undefined,
 });
