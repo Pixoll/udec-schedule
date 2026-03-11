@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SubjectsList from "$lib/components/SubjectsList.svelte";
   import { groupSubjects, schedule, SlotType } from "$lib/schedule";
   import { tw } from "$lib/tailwind";
   import type { ClassType, Subject } from "@/api";
@@ -123,57 +124,19 @@
 
   <div class="mb-16 space-y-16">
     <div class="max-w-200">
-      <label for="subject-search" class="block w-fit mb-2">
-        Buscar ramos
-      </label>
-      <input
-        id="subject-search"
-        class="block w-full mb-6"
-        placeholder="Busca por código o nombre..."
-        bind:value={search}
+      <SubjectsList
+        subjects={filteredSubjects}
+        type="add"
+        action={addSubject}
+        title="Buscar ramos"
+        bind:searchValue={search}
+        searchPlaceholder="Busca por código o nombre..."
+        emptyText="Sin resultados."
       />
-      {#if filteredSubjects.length > 0}
-        <ul class="w-full max-h-96 p-4 space-y-4 overflow-y-scroll">
-          {#each filteredSubjects as subject (`${subject.code}-${subject.section}`)}
-            <li>
-              <button
-                type="button"
-                class="size-7 mr-2 rounded-full bg-emerald-500 text-center content-center cursor-pointer"
-                onclick={() => addSubject(subject)}
-              >
-                +
-              </button>
-              <pre class="inline mr-2">{subject.code}-{subject.section}</pre>
-              {subject.name}
-            </li>
-          {/each}
-        </ul>
-      {:else}
-        <span class="w-full p-4">
-          Sin resultados.
-        </span>
-      {/if}
     </div>
 
     <div class="max-w-200">
-      <span class="block mb-4">
-        Ramos agregados:
-      </span>
-      <ul class="max-h-96 p-4 space-y-4 overflow-y-scroll">
-        {#each selectedSubjects as subject (`${subject.code}-${subject.section}`)}
-          <li>
-            <button
-              type="button"
-              class="size-7 mr-2 rounded-full bg-red-400 text-center content-center cursor-pointer"
-              onclick={() => removeSubject(subject)}
-            >
-              -
-            </button>
-            <pre class="inline mr-2">{subject.code}-{subject.section}</pre>
-            {subject.name}
-          </li>
-        {/each}
-      </ul>
+      <SubjectsList subjects={selectedSubjects} type="remove" action={removeSubject} title="Ramos agregados"/>
     </div>
   </div>
 
