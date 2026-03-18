@@ -29,8 +29,8 @@
   const filteredSubjects = $derived(Object.values($schedule.schedules).filter(s =>
       !selectedSubjects.has(s)
       && (
-        `${s.code}-${s.section}`.includes(search)
-        || isSubsequence(removeAccents(search.toLowerCase()), removeAccents(s.name.toLowerCase()))
+        `${s.code}-${s.section}`.includes(search.trim())
+        || isSubsequence(removeAccents(search.trim().toLowerCase()), removeAccents(s.name.toLowerCase()))
       )
   ));
 
@@ -39,6 +39,12 @@
   const hasWeekendClasses = $derived(groupedSubjectsResult.hasWeekendClasses);
   const groupedSubjects = $derived(groupedSubjectsResult.groupedSubjects);
 
+  const gridClass = $derived(hasWeekendClasses
+    ? tw("grid overflow-auto grid-cols-[repeat(7,14rem)] 2xl:grid-cols-7")
+    : tw("grid overflow-auto grid-cols-[repeat(5,14rem)] xl:grid-cols-5")
+  );
+
+  const slotNumbers = $derived(Array.from({ length: maxSlot }, (_, i) => i + 1));
   const table = $derived(Array.from({ length: maxSlot }, (_, i) => [
     groupedSubjects.get(`lu-${i + 1}`) ?? [],
     groupedSubjects.get(`ma-${i + 1}`) ?? [],
@@ -71,18 +77,13 @@
   } as const satisfies Record<ClassType, string>;
 
   const slotTypeToClass = {
-    [SlotType.UNIQUE]: tw("rounded-lg h-[calc(100%-0.2rem)] my-0.5"),
-    [SlotType.START]: tw("rounded-t-lg h-[calc(100%-0.1rem)] mt-0.5"),
+    [SlotType.UNIQUE]: tw("rounded-lg h-[calc(100%-0.2rem)] my-0.5 overflow-y-auto"),
+    [SlotType.START]: tw("rounded-t-lg h-[calc(100%-0.1rem)] mt-0.5 z-20"),
     [SlotType.MIDDLE]: tw("h-full"),
     [SlotType.END]: tw("rounded-b-lg h-[calc(100%-0.1rem)] mb-0.5"),
   } as const satisfies Record<SlotType, string>;
 
-  const gridWithWeekend = tw("[grid-template-columns:fit-content(0)_repeat(7,16rem)]");
-  const gridNoWeekend = tw("[grid-template-columns:fit-content(0)_repeat(5,16rem)]");
-
   function removeAccents(text: string): string {
-    // webstorm had a fucking stroke
-    // noinspection JSVoidFunctionReturnValueUsed
     return text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
   }
 
@@ -116,14 +117,14 @@
   </h1>
 
   {#if $schedule.updating}
-     <span class="text-orange-400">
-       Los horarios están siendo actualizados actualmente. Actualiza de nuevo la página en unos minutos más para
-       obtener los nuevos horarios.
-     </span>
+    <span class="text-orange-400">
+      Los horarios están siendo actualizados actualmente. Actualiza de nuevo la página en unos minutos más para
+      obtener los nuevos horarios.
+    </span>
   {/if}
 
-  <div class="mb-16 space-y-16">
-    <div class="max-w-200">
+  <div class="flex mb-16 gap-8 max-lg:flex-col">
+    <div class="basis-1/2 max-w-175">
       <SubjectsList
         subjects={filteredSubjects}
         type="add"
@@ -135,56 +136,62 @@
       />
     </div>
 
-    <div class="max-w-200">
+    <div class="basis-1/2 max-w-175">
       <SubjectsList subjects={selectedSubjects} type="remove" action={removeSubject} title="Ramos agregados"/>
     </div>
   </div>
 
-  <div class={["grid", hasWeekendClasses ? gridWithWeekend : gridNoWeekend]}>
-    <div></div>
-    {#each days as day (day)}
-      <div class="h-8 content-center text-center">
-        {day}
-      </div>
-    {/each}
-
-    {#each table as row, i (`${i}:${JSON.stringify(row)}`)}
-      <div class="grid h-32 px-2 gap-2 content-center text-center">
-        <span>{i + 1}</span>
-        <span class="text-gray-500 text-xs">{i + 8}:00 {i + 9}:00</span>
-      </div>
-
-      {#each row as subjects, j (`${j}:${JSON.stringify(subjects)}`)}
-        <div
-          class={{
-            "grid border-b border-r border-b-gray-300 border-r-gray-300 text-white text-wrap": true,
-            "[word-break:break-word]": true,
-            "border-b-0!": subjects.some(s => s.slotType === SlotType.START || s.slotType === SlotType.MIDDLE)
-                           || i === table.length - 1,
-            "border-r-0!": j === row.length - 1,
-          }}
-          style:grid-template-columns={`repeat(${subjects.length}, 1fr)`}
-        >
-          {#each subjects as subject (`${subject.code}-${subject.section}`)}
-            <div
-              class={["box-border mx-[0.1rem] p-2", slotTypeToClass[subject.slotType]]}
-              style:background-color={subject.backgroundColor}
-            >
-              {#if subject.slotType === SlotType.UNIQUE || subject.slotType === SlotType.START}
-                <span class="block font-bold">
-                  {subject.code}-{subject.section} {subject.name}
-                </span>
-                {#each subject.classrooms as classroom (JSON.stringify(classroom))}
-                  <span class="block mt-1  text-white/75">
-                    [{classTypeToString[subject.type]}{classroom.group ? ` G${classroom.group}` : ""}]
-                    {classroom.classroom}
-                  </span>
-                {/each}
-              {/if}
-            </div>
-          {/each}
+  <div class="grid grid-cols-[fit-content(0)_1fr] overflow-hidden max-w-500">
+    <div>
+      <div class="h-8"></div>
+      {#each slotNumbers as slotNumber (slotNumber)}
+        <div class="grid h-32 px-2 gap-2 content-center text-center">
+          <span class="font-medium">{slotNumber}</span>
+          <span class="text-gray-500 text-xs">{slotNumber + 7}:00 {slotNumber + 8}:00</span>
         </div>
       {/each}
-    {/each}
+    </div>
+
+    <div class={gridClass}>
+      {#each days as day (day)}
+        <div class="h-8 content-center text-center font-medium">
+          {day}
+        </div>
+      {/each}
+
+      {#each table as row, i (`${i}:${JSON.stringify(row)}`)}
+        {#each row as subjects, j (`${j}:${JSON.stringify(subjects)}`)}
+          <div
+            class={{
+              "grid h-32 border-b border-r border-b-gray-300 border-r-gray-300 text-white text-wrap text-sm": true,
+              "[word-break:break-word]": true,
+              "border-b-0!": subjects.some(s => s.slotType === SlotType.START || s.slotType === SlotType.MIDDLE)
+                             || i === table.length - 1,
+              "border-r-0!": j === row.length - 1,
+            }}
+            style:grid-template-columns={`repeat(${subjects.length}, 1fr)`}
+          >
+            {#each subjects as subject (`${subject.code}-${subject.section}`)}
+              <div
+                class={["box-border mx-[0.1rem] p-2", slotTypeToClass[subject.slotType]]}
+                style:background-color={subject.backgroundColor}
+              >
+                {#if subject.slotType === SlotType.UNIQUE || subject.slotType === SlotType.START}
+                  <span class="block font-bold">
+                    {subject.code}-{subject.section} {subject.name}
+                  </span>
+                  {#each subject.classrooms as classroom (JSON.stringify(classroom))}
+                    <span class="block mt-1 text-white/75">
+                      [{classTypeToString[subject.type]}{classroom.group ? ` G${classroom.group}` : ""}]
+                      {classroom.classroom}
+                    </span>
+                  {/each}
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/each}
+      {/each}
+    </div>
   </div>
 </div>

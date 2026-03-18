@@ -11,27 +11,56 @@
     emptyText?: string;
   };
 
+  type MinimizedState = Partial<Record<Props["type"], boolean>>;
+
   let { subjects, type, action, title, searchValue = $bindable(), searchPlaceholder, emptyText }: Props = $props();
+
+  const MINIMIZED_KEY = "minimized";
+
+  let minimizedState = $state(loadMinimizedState());
+  let isCurrentMinimized = $derived(!!minimizedState[type]);
+
+  function toggleMinimized(): void {
+    const tempMinimizedState = loadMinimizedState();
+    minimizedState = {
+      ...tempMinimizedState,
+      [type]: !tempMinimizedState[type],
+    };
+    localStorage.setItem(MINIMIZED_KEY, JSON.stringify(minimizedState));
+  }
+
+  function loadMinimizedState(): MinimizedState {
+    return JSON.parse(localStorage.getItem(MINIMIZED_KEY) ?? "{}") as MinimizedState;
+  }
 </script>
 
-{#if searchValue !== undefined}
-  <label for="subject-search" class="block w-fit mb-2">
-    {title}
-  </label>
-  <input
-    id="subject-search"
-    class="block w-full mb-6"
-    placeholder={searchPlaceholder}
-    bind:value={searchValue}
-  />
-{:else}
-  <span class="block mb-4">
-    {title}
-  </span>
-{/if}
+<div class="mb-4">
+  <button
+    type="button"
+    class="size-6 rounded-full select-none text-xl font-mono cursor-pointer bg-gray-300 content-center"
+    onclick={toggleMinimized}
+  >
+    {isCurrentMinimized ? "+" : "-"}
+  </button>
+
+  {#if searchValue !== undefined}
+    <label for="subject-search" class="w-fit font-medium">
+      {title}
+    </label>
+    <input
+      id="subject-search"
+      class="block w-full mt-2"
+      class:hidden={isCurrentMinimized}
+      placeholder={searchPlaceholder}
+      bind:value={searchValue}
+    />
+  {:else}
+    <span class="font-medium">{title}</span>
+  {/if}
+</div>
 
 {#if !emptyText || (Array.isArray(subjects) ? subjects.length : subjects.size) > 0}
-  <ul class="w-full max-h-96 p-4 space-y-4 overflow-y-scroll">
+  <ul class="w-full max-h-96 p-3 space-y-4 overflow-y-scroll" class:hidden={isCurrentMinimized}>
     {#each subjects as subject (`${subject.code}-${subject.section}`)}
       <li>
         <button
@@ -50,7 +79,7 @@
     {/each}
   </ul>
 {:else if emptyText}
-  <span class="w-full p-4">
+  <span class="w-full p-4" class:hidden={isCurrentMinimized}>
     {emptyText}
   </span>
 {/if}
