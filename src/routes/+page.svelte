@@ -111,7 +111,7 @@
   }
 </script>
 
-<div class="p-10">
+<div class="p-6 lg:p-10">
   <h1 class="font-bold text-3xl mb-8">
     Arma tu horario UdeC
   </h1>
@@ -123,7 +123,7 @@
     </span>
   {/if}
 
-  <div class="flex mb-16 gap-8 max-lg:flex-col">
+  <div class="flex mb-10 lg:mb-16 gap-6 lg:gap-8 max-lg:flex-col">
     <div class="basis-1/2 max-w-175">
       <SubjectsList
         subjects={filteredSubjects}
@@ -141,7 +141,7 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-[fit-content(0)_1fr] overflow-hidden max-w-500">
+  <div class="grid grid-cols-[fit-content(0)_1fr] overflow-hidden max-w-500 max-lg:-m-3">
     <div>
       <div class="h-8"></div>
       {#each slotNumbers as slotNumber (slotNumber)}
